@@ -163,7 +163,7 @@ class Chain:
 
         return ik.inverse_kinematic_optimization(self, target, starting_nodes_angles=initial_position, **kwargs)
 
-    def plot(self, joints, ax, target=None, show=False):
+    def plot(self, joints, ax, target=None, show=False, link_names=None):
         """Plots the Chain using Matplotlib
 
         Parameters
@@ -182,7 +182,7 @@ class Chain:
         if ax is None:
             # If ax is not given, create one
             ax = plot.init_3d_figure()
-        plot.plot_chain(self, joints, ax, name=self.name)
+        plot.plot_chain(self, joints, ax, name=self.name, link_names=link_names)
 
         # Plot the goal position
         if target is not None:
