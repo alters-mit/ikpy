@@ -30,7 +30,7 @@ def plot_basis(ax, arm_length=1):
     ax.plot([0, 0], [0, 0], [0, arm_length * 1.5], c=directions_colors[2], label="Z")
 
 
-def plot_chain(chain, joints, ax, name="chain"):
+def plot_chain(chain, joints, ax, name="chain", link_names=None):
     """Plot the chain"""
     # List of nodes
     nodes = []
@@ -53,6 +53,11 @@ def plot_chain(chain, joints, ax, name="chain"):
                 rotation_axes.append((node, rotation_axis))
             else:
                 rotation_axes.append((node, geometry.homogeneous_to_cartesian_vectors(np.dot(transformation_matrixes[index - 1], rotation_axis))))
+        # Print the link names and positions.
+        if link_names is not None and link.name in link_names:
+            ax.text(node[0], node[1], node[2],
+                    f"{link.name.replace('_pitch', '')}\n{(round(node[0], 3), round(node[1], 3), round(node[2], 3))}",
+                    None)
 
     # Plot the chain
     lines = ax.plot([x[0] for x in nodes], [x[1] for x in nodes], [x[2] for x in nodes], linewidth=5, label=name)
