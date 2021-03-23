@@ -108,7 +108,7 @@ class URDFLink(Link):
         self.orientation = np.array(orientation)
         if rotation is not None:
             self.rotation = np.array(rotation)
-            self.has_rotation = True
+            self.has_rotation = self.is_revolute
         else:
             self.rotation = None
             self.has_rotation = False
@@ -126,7 +126,7 @@ class URDFLink(Link):
     Rotation : {}""".format(self.name, self.bounds, self.translation_vector, self.orientation, self.rotation))
 
     def get_rotation_axis(self):
-        if self.rotation is not None:
+        if self.has_rotation:
             return np.dot(
                 geometry.homogeneous_translation_matrix(*self.translation_vector),
                 np.dot(
@@ -161,9 +161,6 @@ class URDFLink(Link):
             # Apply rotation matrix
             if self.rotation is not None and self.is_revolute:
                 symbolic_frame_matrix = symbolic_frame_matrix * geometry.cartesian_to_homogeneous(geometry.symbolic_axis_rotation_matrix(self.rotation, theta), matrix_type="sympy")
-            else:
-                symbolic_frame_matrix[2, 3] += theta
-
             symbolic_frame_matrix = sympy.lambdify(theta, symbolic_frame_matrix, "numpy")
 
             return symbolic_frame_matrix
@@ -179,10 +176,11 @@ class URDFLink(Link):
             frame_matrix = np.dot(frame_matrix, geometry.cartesian_to_homogeneous(geometry.rpy_matrix(*self.orientation)))
 
             # Apply rotation matrix
-            if self.rotation is not None and self.is_revolute:
-                frame_matrix = np.dot(frame_matrix, geometry.cartesian_to_homogeneous(geometry.axis_rotation_matrix(self.rotation, theta)))
-            else:
-                frame_matrix[2, 3] += theta
+            if self.rotation is not None:
+                if self.is_revolute:
+                    frame_matrix = np.dot(frame_matrix, geometry.cartesian_to_homogeneous(geometry.axis_rotation_matrix(self.rotation, theta)))
+                else:
+                    frame_matrix = np.dot(frame_matrix, geometry.homogeneous_translation_matrix(*self.rotation * theta))
 
             return frame_matrix
 
